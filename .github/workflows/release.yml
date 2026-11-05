@@ -1,0 +1,50 @@
+name: Release
+
+# Tag `vX.Y.Z` (must match pyproject.toml). Publish needs approval on the `pypi` environment
+# and uses Trusted Publishing (OIDC); no API token.
+on:
+  push:
+    tags: ["v[0-9]+.[0-9]+.[0-9]+*"]
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: engineering-mathematics/.github/.github/workflows/python-ci.yml@main
+
+  build:
+    needs: ci
+    uses: engineering-mathematics/.github/.github/workflows/python-build.yml@main
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/engg-math-cli/
+    permissions:
+      id-token: write          # Trusted Publishing
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: dist, path: dist/ }
+      - name: Keep the SBOM out of the PyPI upload (attached to the GitHub release)
+        run: rm dist/sbom.cdx.json
+      - uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
+
+  github-release:
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: { name: dist, path: dist/ }
+      - uses: softprops/action-gh-release@efb35369e0ad2afab669f228072c1b0d510eae64 # v3.0.3
+        with:
+          files: dist/*
+          generate_release_notes: true

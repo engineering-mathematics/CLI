@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 3 * * 1"   # weekly: upstream breakage, new advisories
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: engineering-mathematics/.github/.github/workflows/python-ci.yml@main

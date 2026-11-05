@@ -1,0 +1,139 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+# The orchestrator is not part of the engg_math namespace: dist engg-math-cli, import engg_math_cli.
+name = "engg-math-cli"
+version = "0.1.0"
+description = "Workspace manager and health checker for the Engineering Mathematics ecosystem"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [{ name = "Engineering Mathematics Team" }]
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+keywords = ["engineering mathematics", "cli", "workspace", "uv", "doctor"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Environment :: Console",
+    "Topic :: Software Development :: Build Tools",
+    "Typing :: Typed",
+]
+dependencies = [
+    "packaging>=24.0",
+    "rich>=13.9",
+    "tomlkit>=0.13",
+    "typer>=0.15.4",
+]
+
+[project.scripts]
+engg-math = "engg_math_cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-cov>=6.0",
+    "pytest-benchmark>=5.0",
+    "hypothesis>=6.120",
+    "mypy>=1.13",
+    "ruff>=0.8",
+    "import-linter>=2.1",
+    "pip-audit>=2.7",
+    "twine>=6.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/engg_math_cli"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "CHANGELOG.md", "LICENSE", "pyproject.toml"]
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "W", "F", "I", "N", "UP", "B", "A", "C4", "C90", "SIM", "RUF", "PL", "PT",
+    "S", "ANN", "D", "TCH", "PERF", "NPY", "FURB", "ERA", "TRY", "EM", "PGH",
+    "ARG", "RET", "PIE", "FA", "ISC", "ICN", "TID", "PTH", "SLF", "FLY",
+]
+ignore = [
+    "D203", "D213",   # conflicting pairs
+    "TRY003", "EM101", "EM102",
+    "COM812", "ISC001",
+    "PLR0913", "PLR0917",
+]
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.pydocstyle]
+convention = "numpy"
+
+[tool.ruff.lint.isort]
+known-first-party = ["engg_math_cli"]
+
+# Banned: explicit inverse/determinant. Use factorisation-based solves.
+[tool.ruff.lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"numpy.linalg.inv" = { msg = "Explicit inversion is forbidden: use a factorisation-based solve." }
+"numpy.linalg.pinv" = { msg = "Use SVD-based solvers (engg-math-linear-systems)." }
+"numpy.linalg.det" = { msg = "Determinants are numerically unstable: use a log-determinant from a factorisation." }
+"numpy.matrix" = { msg = "np.matrix is deprecated: use DenseMatrix." }
+"scipy.linalg.inv" = { msg = "Explicit inversion is forbidden: use a factorisation-based solve." }
+"scipy.linalg.pinv" = { msg = "Use SVD-based solvers (engg-math-linear-systems)." }
+"scipy.linalg.det" = { msg = "Determinants are numerically unstable: use a log-determinant from a factorisation." }
+"scipy.linalg.pinv2" = { msg = "Removed from SciPy." }
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S101", "ANN", "D", "PLR2004", "SLF001", "ARG"]
+
+[tool.ruff.format]
+docstring-code-format = true
+
+# ---------------------------------------------------------------- mypy
+[tool.mypy]
+strict = true
+files = ["src", "tests"]
+mypy_path = "src"
+namespace_packages = true
+explicit_package_bases = true
+warn_unreachable = true
+enable_error_code = ["ignore-without-code", "redundant-expr", "truthy-bool"]
+
+# ---------------------------------------------------------------- pytest / coverage
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+addopts = "-ra --strict-markers --strict-config --cov=engg_math_cli --cov-report=term-missing --cov-fail-under=90"
+filterwarnings = ["error"]
+markers = ["benchmark: performance regression tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["engg_math_cli"]
+
+[tool.coverage.report]
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError", "\\.\\.\\."]
+
+# ---------------------------------------------------------------- import-linter
+# The orchestrator manages the ecosystem and imports none of it at runtime.
+[tool.importlinter]
+root_packages = ["engg_math_cli"]
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "The orchestrator never imports ecosystem libraries"
+type = "forbidden"
+source_modules = ["engg_math_cli"]
+forbidden_modules = ["engg_math"]

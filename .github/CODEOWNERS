@@ -1,0 +1,4 @@
+# Every change needs review from the owning team (see GOVERNANCE.md).
+*                       @engineering-mathematics/foundations
+/.github/               @engineering-mathematics/maintainers
+/pyproject.toml         @engineering-mathematics/foundations @engineering-mathematics/maintainers
