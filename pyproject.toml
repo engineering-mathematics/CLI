@@ -28,7 +28,7 @@ dependencies = [
     "packaging>=24.0",
     "rich>=13.9",
     "tomlkit>=0.13",
-    "typer>=0.15.4",
+    "typer>=0.28.0",
 ]
 
 [project.scripts]
