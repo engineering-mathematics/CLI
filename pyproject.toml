@@ -39,10 +39,10 @@ dev = [
     "pytest>=8.3",
     "pytest-cov>=6.0",
     "pytest-benchmark>=5.0",
-    "hypothesis>=6.120",
+    "hypothesis>=6.170.15",
     "mypy>=1.13",
-    "ruff>=0.8",
-    "import-linter>=2.1",
+    "ruff>=0.17.4",
+    "import-linter>=2.16",
     "pip-audit>=2.7",
     "twine>=6.0",
 ]
